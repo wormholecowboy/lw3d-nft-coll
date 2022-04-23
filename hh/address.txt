@@ -1,0 +1,1 @@
+crypto dev contract add: 0x10c888f5D4631aF0f93fB7159423bf48781e6906

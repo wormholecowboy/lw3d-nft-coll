@@ -31,9 +31,9 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
     }
 
     function presaleMint() public payable onlyWhenNotPaused {
-        require(presaleStarted & block.timestamp < presaleEnded);
+        require(presaleStarted && block.timestamp < presaleEnded, "Presale is not running");
         require(whitelist.whitelistedAddresses(msg.sender), "You are not whitelisted");
-        require(tokenIds < maxTockenIds, "Exceeded maximum Crypto Devs supply");
+        require(tokenIds < maxTokenIds, "Exceeded maximum Crypto Devs supply");
         require(msg.value >= _price, "Ether sent is not correct");
         tokenIds += 1;
         _safeMint(msg.sender, tokenIds);
@@ -61,7 +61,7 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
         address _owner = owner();
         uint256 amount = address(this).balance;
         (bool sent, ) = _owner.call{value: amount}("");
-        require(sent, "Failed to send Ether);
+        require(sent, "Failed to send Ether");
     }
 
     receive() external payable {}
@@ -94,7 +94,8 @@ contract CryptoDevs is ERC721Enumerable, Ownable {
     withraw funds
     var owner
     var amount to take
-    ????
+    send balance to owner
+    require sent
 
 
     set contract to allow payements in both ways (msg.data)
