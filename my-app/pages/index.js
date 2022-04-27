@@ -46,6 +46,78 @@ export default function Home() {
       console.error(err);
     }
   };
+
+  const connectWallet = async () => {
+    try {
+      await getProviderOrSigner();
+      setWalletConnected(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const startPresale = async () => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const whitelistContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer);
+      const tx = whitelistContract.startPresale();
+      setLoading(true);
+      await tx.wait();
+      setLoading(false);
+      await checkIfPresaleStarted();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const checkIfPresaleStarted = async () => {
+    try {
+      const provider = await getProviderOrSigner();
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider);
+      const _presaleStarted = await nftContract.presaleStarted();
+      if (!_presaleStarted) {
+        await getOwner();
+      }
+      setPresaleStarted(_presaleStarted);
+      return _presaleStarted;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const checkIfPresaleEnded = async () => {
+    try {
+      const provider = getProviderOrSigner();
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider);
+      const _presaleEnded = await nftContract.presaleEnded();
+      const hasEnded = _presaleEnded.lt(Math.floor(Date.now() / 1000));
+      if (hasEnded) {
+        setPresaleEnded(true);
+      } else {
+        setPresaleEnded(false);
+      }
+      return hasEnded;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const getOwner = async () => {
+    try {
+      const provider = await getProviderOrSigner();
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider);
+      const _owner = await nftContract.owner();
+      const signer = await getProviderOrSigner(true);
+      const address = await signer.getAddress();
+      if (address.toLowerCase() === _owner.toLowerCase()) {
+        setIsOwner(true);
+      }
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
 }
 
 // things I'm learning
