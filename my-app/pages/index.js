@@ -118,11 +118,72 @@ export default function Home() {
       console.error(err.message);
     }
   };
+
+  const getTokenIdsMinted = async () => {
+    try {
+      const provider = getProviderOrSigner();
+      const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider);
+      const _tokenIds = await nftContract.tokenIds();
+      setTokenIdsMinted(_tokenIds.toString());
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getProviderOrSigner = async (needSigner = false) => {
+    const provider = await web3ModalRef.current.connect();
+    const web3Provider = new providers.Web3Provider(provider);
+    const { chainId } = await web3Provider.getNetwork();
+
+    if (chainId != 4) {
+      window.alert('Ya gotta change the network to Rinkeby, jerky!');
+      throw new Error("Try the Rinkeby network...you'll love it");
+    }
+
+    if (needSigner) {
+      const signer = web3Provider.getSigner();
+      return signer;
+    }
+    return web3Provider;
+  };
+
+  useEffect(() => {
+    if (!walletConnected) {
+      web3ModalRef.current = new Web3Modal({
+        network: 'rinkeby',
+        providerOptions: {},
+        disableInjectedProvider: false,
+      });
+      connectWallet();
+
+      const _presaleStarted = checkIfPresaleStarted();
+      if (_presaleStarted) {
+        checkIfPresaleEnded();
+      }
+
+      getTokenIdsMinted();
+
+      const presaleEndedInterval = setInterval(async function () {
+        const _presaleStarted = await checkIfPresaleStarted();
+        if (_presaleStarted) {
+          const _presaleEnded = await checkIfPresaleEnded();
+          if (_presaleEnded) {
+            clearInterval(presaleEndedInterval);
+          }
+        }
+      }, 5 * 1000);
+
+      setInterval(async function () {
+        await getTokenIdsMinted();
+      }, 5 * 1000);
+    }
+  }, [walletConnected]);
 }
 
 // things I'm learning
 /*
 -separate out the conditional logic from the mint functions
 -use try and catch for all your function as well as async/await
-
+-when calling functions inside a function, throw them in a variable if they evaluate
+to something useful
 */
