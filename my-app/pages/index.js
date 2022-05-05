@@ -60,7 +60,7 @@ export default function Home() {
     try {
       const signer = await getProviderOrSigner(true);
       const whitelistContract = new Contract(NFT_CONTRACT_ADDRESS, abi, signer);
-      const tx = whitelistContract.startPresale();
+      const tx = await whitelistContract.startPresale();
       setLoading(true);
       await tx.wait();
       setLoading(false);
@@ -88,7 +88,7 @@ export default function Home() {
 
   const checkIfPresaleEnded = async () => {
     try {
-      const provider = getProviderOrSigner();
+      const provider = await getProviderOrSigner();
       const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider);
       const _presaleEnded = await nftContract.presaleEnded();
       const hasEnded = _presaleEnded.lt(Math.floor(Date.now() / 1000));
@@ -121,7 +121,7 @@ export default function Home() {
 
   const getTokenIdsMinted = async () => {
     try {
-      const provider = getProviderOrSigner();
+      const provider = await getProviderOrSigner();
       const nftContract = new Contract(NFT_CONTRACT_ADDRESS, abi, provider);
       const _tokenIds = await nftContract.tokenIds();
       setTokenIdsMinted(_tokenIds.toString());
@@ -217,7 +217,7 @@ export default function Home() {
             Presale has started! If your address is whitelisted, Mint a Crypto
             Dev.
           </div>
-          <button className={sytles.button} onClick={presaleMint}>
+          <button className={styles.button} onClick={presaleMint}>
             Presale Mint
           </button>
         </div>
